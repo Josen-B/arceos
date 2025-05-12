@@ -30,6 +30,9 @@ jobs:
       if: ${{ matrix.arch == 'x86_64' }}
       continue-on-error: ${{ matrix.rust-toolchain == 'nightly' }}
       run: make clippy
+    - uses: ./.github/workflows/actions/setup-musl
+      with:
+        arch: ${{ matrix.arch }}
     - name: Clippy for ${{ matrix.arch }}
       continue-on-error: ${{ matrix.rust-toolchain == 'nightly' }}
       run: make clippy ARCH=${{ matrix.arch }}
