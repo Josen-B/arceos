@@ -1,4 +1,5 @@
 pub mod mem;
+pub mod pl061;
 
 #[cfg(feature = "smp")]
 pub mod mp;
@@ -50,6 +51,7 @@ pub fn platform_init() {
     super::aarch64_common::gic::init_primary();
     super::aarch64_common::generic_timer::init_percpu();
     super::aarch64_common::pl011::init();
+    gpio_init();
 }
 
 /// Initializes the platform devices for secondary CPUs.
@@ -58,4 +60,40 @@ pub fn platform_init_secondary() {
     #[cfg(feature = "irq")]
     super::aarch64_common::gic::init_secondary();
     super::aarch64_common::generic_timer::init_percpu();
+}
+
+use crate::platform::pl061::PL061Regs;
+pub const PLO61REGS: *mut PL061Regs = (axconfig::plat::PHYS_VIRT_OFFSET + 0x0930_0000) as *mut PL061Regs;
+
+/// init gpio interrupt
+pub fn gpio_init() {
+    use tock_registers::interface::{ReadWrite, Writeable};
+    use crate::platform::aarch64_common::gic;
+    use crate::platform::aarch64_qemu_virt::PL061Regs;
+
+    const GPIO_IRQ: usize = 7;
+    // set interrupt enable
+    crate::irq::set_enable(GPIO_IRQ, true);
+    // register handler
+    gic::register_handler(GPIO_IRQ, handle_gpio_irq);
+
+    unsafe {
+        let pl061 = &mut *PLO61REGS;
+        pl061.ie.write(GPIO_IE::pin3::set);
+
+    }
+}
+
+
+pub fn handle_gpio_irq() {
+    use core::arch::asm;
+    use tock_registers::interface::{ReadWrite, Writeable};
+    info!("shutdown now");
+    unsafe {
+        let pl061 = &mut *PLO61REGS;
+        pl061.ic.set(pl061.ie.get());
+
+        asm!("mov w0, #0x19");
+        asm!("hlt #0xF000");
+    }
 }
