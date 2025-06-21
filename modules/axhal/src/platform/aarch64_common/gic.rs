@@ -13,6 +13,9 @@ pub const TIMER_IRQ_NUM: usize = translate_irq(14, InterruptType::PPI).unwrap();
 /// The UART IRQ number.
 pub const UART_IRQ_NUM: usize = translate_irq(UART_IRQ, InterruptType::SPI).unwrap();
 
+/// The GPIO IRQ number.
+pub const GPIO_IRQ_NUM: usize = translate_irq(7, InterruptType::SPI).unwrap();
+
 const GICD_BASE: PhysAddr = pa!(GICD_PADDR);
 const GICC_BASE: PhysAddr = pa!(GICC_PADDR);
 
