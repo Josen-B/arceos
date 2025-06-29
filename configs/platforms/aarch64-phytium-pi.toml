@@ -57,6 +57,9 @@ mmio-regions = [
     [0x000_2803_7000, 0x1000],  # GPIO3
     [0x000_2803_8000, 0x1000],  # GPIO4
     [0x000_2803_9000, 0x1000],  # GPIO5
+
+    [0x000_2804_0000, 0x2000],  # SBSA-GWDT0
+    [0x000_2804_2000, 0x2000],  # SBSA-GWDT1
 ]                               # [(uint, uint)]
 # VirtIO MMIO regions with format (`base_paddr`, `size`).
 virtio-mmio-regions = []        # [(uint, uint)]
