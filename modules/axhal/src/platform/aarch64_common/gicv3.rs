@@ -1,8 +1,8 @@
 use crate::{irq::IrqHandler, mem::phys_to_virt};
-use core::arch::asm;
 use arm_gic_driver::*;
 use arm_gicv2::{InterruptType, translate_irq};
 use axconfig::devices::{GICC_PADDR, GICD_PADDR, GICR_PADDR, UART_IRQ};
+use core::arch::asm;
 use core::ptr::NonNull;
 use kspin::SpinNoIrq;
 use memory_addr::PhysAddr;

@@ -1,5 +1,6 @@
 pub mod mem;
 
+pub mod uart;
 pub mod watchdog;
 pub mod wdt_driver;
 
@@ -12,6 +13,7 @@ pub mod irq {
 }
 
 pub mod console {
+    pub use super::uart::*;
     pub use crate::platform::aarch64_common::pl011::*;
 }
 
@@ -60,8 +62,8 @@ pub fn platform_init() {
     super::aarch64_common::gic::init_primary();
     super::aarch64_common::generic_timer::init_percpu();
     super::aarch64_common::pl011::init();
-    info!("watchdog_example");
-    wdt_driver::watchdog_example();
+    // info!("watchdog_example");
+    // wdt_driver::watchdog_example();
 }
 
 /// Initializes the platform devices for secondary CPUs.

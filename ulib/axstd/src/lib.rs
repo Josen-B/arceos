@@ -71,6 +71,8 @@ pub mod sync;
 pub mod thread;
 pub mod time;
 
+pub use arceos_api::console;
+
 #[cfg(feature = "fs")]
 pub mod fs;
 #[cfg(feature = "net")]

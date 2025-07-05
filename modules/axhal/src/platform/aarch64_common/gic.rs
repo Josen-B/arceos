@@ -16,6 +16,8 @@ pub const UART_IRQ_NUM: usize = translate_irq(UART_IRQ, InterruptType::SPI).unwr
 /// The GPIO IRQ number.
 pub const GPIO_IRQ_NUM: usize = translate_irq(7, InterruptType::SPI).unwrap();
 
+pub const WATCHDOG_IRQ_NUM: usize = translate_irq(164, InterruptType::SPI).unwrap() as usize;
+
 const GICD_BASE: PhysAddr = pa!(GICD_PADDR);
 const GICC_BASE: PhysAddr = pa!(GICC_PADDR);
 
