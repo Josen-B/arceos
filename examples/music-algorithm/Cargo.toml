@@ -10,6 +10,4 @@ authors = ["Qiaosen Bai <baiqiaosen@gmail.com>"]
 log = "=0.4.21"
 axstd = { workspace = true, optional = true, features = ["alloc"] }
 libm = "0.2"
-rand = { version = "0.8", default-features = false }
-nalgebra = { version = "0.32", default-features = false, features = ["libm-force"] }
 num-complex = { version = "0.4", default-features = false }
