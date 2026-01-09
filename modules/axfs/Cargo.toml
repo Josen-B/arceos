@@ -10,16 +10,10 @@ repository = "https://github.com/arceos-org/arceos/tree/main/modules/axfs"
 documentation = "https://arceos-org.github.io/arceos/axfs/index.html"
 
 [features]
-devfs = ["dep:axfs_devfs"]
-ramfs = ["dep:axfs_ramfs"]
-procfs = ["dep:axfs_ramfs"]
-sysfs = ["dep:axfs_ramfs"]
-ext4fs = ["dep:lwext4_rust"]
 fatfs = ["dep:fatfs"]
-myfs = ["dep:crate_interface"]
 use-ramdisk = []
 
-default = ["devfs", "ramfs", "fatfs", "procfs", "sysfs"]
+default = ["fatfs"]
 
 [dependencies]
 axdriver = { workspace = true, features = ["block"] }

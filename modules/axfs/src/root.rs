@@ -9,7 +9,7 @@ use axsync::Mutex;
 use lazyinit::LazyInit;
 use scope_local::scope_local;
 
-use crate::{api::FileType, fs, mounts};
+use crate::{api::FileType, fs};
 
 struct MountPoint {
     path: &'static str,
@@ -161,44 +161,13 @@ scope_local! {
 }
 
 pub(crate) fn init_rootfs(disk: crate::dev::Disk) {
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "myfs")] { // override the default filesystem
-            let main_fs = fs::myfs::new_myfs(disk);
-        } else if #[cfg(feature = "ext4fs")] {
-            static EXT4_FS: LazyInit<Arc<fs::ext4fs::Ext4FileSystem>> = LazyInit::new();
-            EXT4_FS.init_once(Arc::new(fs::ext4fs::Ext4FileSystem::new(disk)));
-            let main_fs = EXT4_FS.clone();
-        } else if #[cfg(feature = "fatfs")] {
-            static FAT_FS: LazyInit<Arc<fs::fatfs::FatFileSystem>> = LazyInit::new();
-            FAT_FS.init_once(Arc::new(fs::fatfs::FatFileSystem::new(disk)));
-            FAT_FS.init();
-            let main_fs = FAT_FS.clone();
-        }
-    }
+
+    static FAT_FS: LazyInit<Arc<fs::fatfs::FatFileSystem>> = LazyInit::new();
+    FAT_FS.init_once(Arc::new(fs::fatfs::FatFileSystem::new(disk)));
+    FAT_FS.init();
+    let main_fs = FAT_FS.clone();
 
     let mut root_dir = RootDirectory::new(main_fs);
-
-    #[cfg(feature = "devfs")]
-    root_dir
-        .mount("/dev", mounts::devfs())
-        .expect("failed to mount devfs at /dev");
-
-    #[cfg(feature = "ramfs")]
-    root_dir
-        .mount("/tmp", mounts::ramfs())
-        .expect("failed to mount ramfs at /tmp");
-
-    // Mount another ramfs as procfs
-    #[cfg(feature = "procfs")]
-    root_dir // should not fail
-        .mount("/proc", mounts::procfs().unwrap())
-        .expect("fail to mount procfs at /proc");
-
-    // Mount another ramfs as sysfs
-    #[cfg(feature = "sysfs")]
-    root_dir // should not fail
-        .mount("/sys", mounts::sysfs().unwrap())
-        .expect("fail to mount sysfs at /sys");
 
     ROOT_DIR.init_once(Arc::new(root_dir));
 }

@@ -90,7 +90,6 @@ fn test_file_permission() -> Result<()> {
     assert_err!(fs::metadata("error"), NotFound);
 
     // read/write a directory
-    assert_err!(fs::read_to_string("/dev"), IsADirectory);
     assert_err!(fs::write(".", "test"), IsADirectory);
 
     println!("test_file_permisson() OK!");
@@ -164,99 +163,10 @@ fn test_remove_file_dir() -> Result<()> {
     Ok(())
 }
 
-fn test_devfs_ramfs() -> Result<()> {
-    const N: usize = 32;
-    let mut buf = [1; N];
-
-    // list '/' and check if /dev and /tmp exist
-    let dirents = fs::read_dir("././//.//")?
-        .map(|e| e.unwrap().file_name())
-        .collect::<Vec<_>>();
-    assert!(dirents.contains(&"dev".into()));
-    assert!(dirents.contains(&"tmp".into()));
-
-    // read and write /dev/null
-    let mut file = File::options().read(true).write(true).open("/dev/./null")?;
-    assert_eq!(file.read_to_end(&mut Vec::new())?, 0);
-    assert_eq!(file.write(&buf)?, N);
-    assert_eq!(buf, [1; N]);
-
-    // read and write /dev/zero
-    let mut file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open("////dev/zero")?;
-    assert_eq!(file.read(&mut buf)?, N);
-    assert!(file.write_all(&buf).is_ok());
-    assert_eq!(buf, [0; N]);
-
-    // list /dev
-    let dirents = fs::read_dir("/dev")?
-        .map(|e| e.unwrap().file_name())
-        .collect::<Vec<_>>();
-    assert!(dirents.contains(&"null".into()));
-    assert!(dirents.contains(&"zero".into()));
-
-    // stat /dev
-    let dname = "/dev";
-    let dir = File::open(dname)?;
-    let md = dir.metadata()?;
-    println!("metadata of {dname:?}: {md:?}");
-    assert_eq!(md.file_type(), FileType::Dir);
-    assert!(!md.is_file());
-    assert!(md.is_dir());
-
-    // stat /dev/foo/bar
-    let fname = ".//.///././/./dev///.///./foo//././bar";
-    let file = File::open(fname)?;
-    let md = file.metadata()?;
-    println!("metadata of {fname:?}: {md:?}");
-    assert_eq!(md.file_type(), FileType::CharDevice);
-    assert!(!md.is_dir());
-
-    // error cases
-    assert_err!(fs::metadata("/dev/null/"), NotADirectory);
-    assert_err!(fs::create_dir("dev"), AlreadyExists);
-    assert_err!(File::create_new("/dev/"), AlreadyExists);
-    assert_err!(fs::create_dir("/dev/zero"), AlreadyExists);
-    assert_err!(fs::write("/dev/stdout", "test"), PermissionDenied);
-    assert_err!(fs::create_dir("/dev/test"), PermissionDenied);
-    assert_err!(fs::remove_file("/dev/null"), PermissionDenied);
-    assert_err!(fs::remove_dir("./dev"), PermissionDenied);
-    assert_err!(fs::remove_dir("./dev/."), InvalidInput);
-    assert_err!(fs::remove_dir("///dev//..//"), InvalidInput);
-
-    // parent of '/dev'
-    assert_eq!(fs::create_dir("///dev//..//233//"), Ok(()));
-    assert_eq!(fs::write(".///dev//..//233//.///test.txt", "test"), Ok(()));
-    assert_err!(fs::remove_file("./dev//../..//233//.///test.txt"), NotFound);
-    assert_eq!(fs::remove_file("./dev//..//233//../233/./test.txt"), Ok(()));
-    assert_eq!(fs::remove_dir("dev//foo/../foo/../.././/233"), Ok(()));
-    assert_err!(fs::remove_dir("very/../dev//"), PermissionDenied);
-
-    // tests in /tmp
-    assert_eq!(fs::metadata("tmp")?.file_type(), FileType::Dir);
-    assert_eq!(fs::create_dir(".///tmp///././dir"), Ok(()));
-    assert_eq!(fs::read_dir("tmp").unwrap().count(), 1);
-    assert_eq!(fs::write(".///tmp///dir//.///test.txt", "test"), Ok(()));
-    assert_eq!(fs::read("tmp//././/dir//.///test.txt"), Ok("test".into()));
-    // assert_err!(fs::remove_dir("dev/../tmp//dir"), DirectoryNotEmpty); // TODO
-    assert_err!(fs::remove_dir("/tmp/dir/../dir"), DirectoryNotEmpty);
-    assert_eq!(fs::remove_file("./tmp//dir//test.txt"), Ok(()));
-    assert_eq!(fs::remove_dir("tmp/dir/.././dir///"), Ok(()));
-    assert_eq!(fs::read_dir("tmp").unwrap().count(), 0);
-
-    println!("test_devfs_ramfs() OK!");
-    Ok(())
-}
-
 pub fn test_all() {
     test_read_write_file().expect("test_read_write_file() failed");
     test_read_dir().expect("test_read_dir() failed");
     test_file_permission().expect("test_file_permission() failed");
     test_create_file_dir().expect("test_create_file_dir() failed");
     test_remove_file_dir().expect("test_remove_file_dir() failed");
-    test_devfs_ramfs().expect("test_devfs_ramfs() failed");
 }

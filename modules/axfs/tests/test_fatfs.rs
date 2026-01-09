@@ -1,5 +1,3 @@
-#![cfg(not(feature = "myfs"))]
-
 mod test_common;
 
 use axdriver::{AxDeviceContainer, AxDeviceEnum};

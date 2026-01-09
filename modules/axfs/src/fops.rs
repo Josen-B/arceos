@@ -6,11 +6,6 @@ use axio::SeekFrom;
 use cap_access::{Cap, WithCap};
 use core::fmt;
 
-#[cfg(feature = "myfs")]
-pub use crate::dev::Disk;
-#[cfg(feature = "myfs")]
-pub use crate::fs::myfs::MyFileSystemIf;
-
 /// Alias of [`axfs_vfs::VfsNodeType`].
 pub type FileType = axfs_vfs::VfsNodeType;
 /// Alias of [`axfs_vfs::VfsDirEntry`].

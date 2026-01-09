@@ -61,8 +61,6 @@ fs = [
     "dep:axfs",
     "axruntime/fs",
 ] # TODO: try to remove "paging"
-myfs = ["axfs?/myfs"]
-ext4fs = ["axfs?/ext4fs"]
 fatfs = ["axfs?/fatfs"]
 
 # Networking
